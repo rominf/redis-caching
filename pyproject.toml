@@ -1,0 +1,9 @@
+[tool.poetry]
+name = "redis-caching"
+version = "0.1.0"
+description = ""
+authors = ["Roman Inflianskas <infroma@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.5"
+aioredis = "^1.1"
