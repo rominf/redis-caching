@@ -12,9 +12,9 @@ install_requires = \
 
 setup_kwargs = {
     'name': 'redis-caching',
-    'version': '0.1.0',
+    'version': '0.1.1',
     'description': 'A Python library for caching in Redis',
-    'long_description': '# redis-caching\nPython library for caching in Redis\n',
+    'long_description': '# redis-caching\nPython library for caching in Redis\n\n## Installation\n```shell\n$ pip install redis-caching\n```\n',
     'author': 'Roman Inflianskas',
     'author_email': 'infroma@gmail.com',
     'url': 'https://github.com/rominf/redis-caching',

@@ -5,9 +5,6 @@ import dill
 import inspect
 
 
-__version__ = '0.1.0'
-
-
 class Cache:
     def __init__(self, redis: Optional[Redis] = None):
         self._redis = None
@@ -21,7 +18,8 @@ class Cache:
     def redis(self, value: Redis) -> None:
         self._redis = value
 
-    def __call__(self, pre_serialize_coro: Callable, post_serialize_coro: Callable) -> Callable:
+    def __call__(self, pre_serialize_coro: Optional[Callable] = None,
+                 post_deserialize_coro: Optional[Callable] = None) -> Callable:
         def decorator(coro: Callable) -> Callable:
             module_coro_key = (inspect.getsourcefile(object=coro) + coro.__name__).encode(encoding='ascii')
 
@@ -32,12 +30,16 @@ class Cache:
                 value = await self.redis.get(key)
                 if value is None:
                     result = await coro(*args, **kwargs)
-                    result_for_serialization = await pre_serialize_coro(result)
+                    result_for_serialization = (await pre_serialize_coro(result)
+                                                if pre_serialize_coro is not None else
+                                                result)
                     result_serialized = dill.dumps(obj=result_for_serialization)
                     await self.redis.set(key=key, value=result_serialized)
                 else:
-                    result_serialized = dill.loads(str=value)
-                    result = await post_serialize_coro(result_serialized)
+                    result_deserialized = dill.loads(str=value)
+                    result = (await post_deserialize_coro(result_deserialized)
+                              if post_deserialize_coro is not None else
+                              result_deserialized)
                 return result
 
             return wrapper
