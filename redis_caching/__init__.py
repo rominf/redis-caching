@@ -18,11 +18,18 @@ class Cache:
     def redis(self, value: Redis) -> None:
         self._redis = value
 
-    async def clear(self) -> None:
-        await self.redis.flushdb()
+    async def clear(self, arg: Optional[str] = None) -> None:
+        if arg is not None:
+            arg_serialized = dill.dumps(obj=arg)
+            for key in await self.redis.mget(key=arg_serialized):
+                if key is not None:
+                    await self.redis.delete(key=key)
+            await self.redis.delete(key=arg_serialized)
+        else:
+            await self.redis.flushdb()
 
     def __call__(self, pre_serialize_coro: Optional[Callable] = None,
-                 post_deserialize_coro: Optional[Callable] = None) -> Callable:
+                 post_deserialize_coro: Optional[Callable] = None, store_by_arg: Optional[str] = None) -> Callable:
         def decorator(coro: Callable) -> Callable:
             module_coro_key = (inspect.getsourcefile(object=coro) + coro.__name__).encode(encoding='ascii')
 
@@ -38,6 +45,14 @@ class Cache:
                                                 result)
                     result_serialized = dill.dumps(obj=result_for_serialization)
                     await self.redis.set(key=key, value=result_serialized)
+                    if store_by_arg is not None:
+                        arg_values = inspect.getargvalues(inspect.currentframe())
+                        try:
+                            arg = arg_values.locals[store_by_arg]
+                        except KeyError:
+                            arg = arg_values.locals['kwargs'][store_by_arg]
+                        arg_serialized = dill.dumps(obj=arg)
+                        await self.redis.append(key=arg_serialized, value=key)
                 else:
                     result_deserialized = dill.loads(str=value)
                     result = (await post_deserialize_coro(result_deserialized)
