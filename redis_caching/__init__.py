@@ -18,6 +18,9 @@ class Cache:
     def redis(self, value: Redis) -> None:
         self._redis = value
 
+    async def clear(self) -> None:
+        await self.redis.flushdb()
+
     def __call__(self, pre_serialize_coro: Optional[Callable] = None,
                  post_deserialize_coro: Optional[Callable] = None) -> Callable:
         def decorator(coro: Callable) -> Callable:
