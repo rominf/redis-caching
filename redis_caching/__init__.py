@@ -1,8 +1,24 @@
+from dataclasses import dataclass
+
 from aioredis import Redis
 from functools import wraps
 from typing import Callable, Any, Optional
 import dill
 import inspect
+
+
+string_types = (str, bytes)
+
+
+@dataclass
+class Config:
+    address: str = 'redis://localhost:6379/0'
+    db: int = 0
+    password: Optional[str] = None
+    ssl: Optional[bool] = None
+    encoding: Optional[str] = None
+    minsize: int = 1
+    maxsize: int = 10
 
 
 class Cache:
