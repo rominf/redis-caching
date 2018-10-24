@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from aioredis import Redis
 from functools import wraps
-from typing import Callable, Any, Optional
+from typing import Callable, Any, Optional, Union, Collection
 import dill
 import inspect
 
@@ -34,15 +34,19 @@ class Cache:
     def redis(self, value: Redis) -> None:
         self._redis = value
 
-    async def clear(self, arg: Optional[str] = None) -> None:
-        if arg is not None:
-            arg_serialized = dill.dumps(obj=arg)
-            for key in await self.redis.mget(key=arg_serialized):
-                if key is not None:
-                    await self.redis.delete(key=key)
-            await self.redis.delete(key=arg_serialized)
+    async def clear(self, arg: Optional[Union[str, Collection[str]]] = None) -> None:
+        if not isinstance(arg, string_types):
+            for arg in arg:
+                await self.clear(arg=arg)
         else:
-            await self.redis.flushdb()
+            if arg is not None:
+                arg_serialized = dill.dumps(obj=arg)
+                for key in await self.redis.mget(key=arg_serialized):
+                    if key is not None:
+                        await self.redis.delete(key=key)
+                await self.redis.delete(key=arg_serialized)
+            else:
+                await self.redis.flushdb()
 
     def __call__(self, pre_serialize_coro: Optional[Callable] = None,
                  post_deserialize_coro: Optional[Callable] = None, store_by_arg: Optional[str] = None) -> Callable:
