@@ -5,8 +5,10 @@ from functools import wraps
 from typing import Callable, Any, Optional, Union, Collection
 import dill
 import inspect
+import poetry_version
 
 
+__version__ = poetry_version.extract(source_file=__file__)
 string_types = (str, bytes)
 
 

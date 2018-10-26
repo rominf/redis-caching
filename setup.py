@@ -8,11 +8,14 @@ package_data = \
 {'': ['*']}
 
 install_requires = \
-['aioredis>=1.1,<2.0', 'dataclasses>=0.6.0,<0.7.0', 'dill>=0.2.8,<0.3.0']
+['aioredis>=1.1,<2.0',
+ 'dataclasses>=0.6.0,<0.7.0',
+ 'dill>=0.2.8,<0.3.0',
+ 'poetry-version']
 
 setup_kwargs = {
     'name': 'redis-caching',
-    'version': '0.1.4',
+    'version': '0.1.5',
     'description': 'A Python library for caching in Redis',
     'long_description': '# redis-caching\nPython library for caching in Redis\n\n## Installation\n```shell\n$ pip install redis-caching\n```\n',
     'author': 'Roman Inflianskas',
